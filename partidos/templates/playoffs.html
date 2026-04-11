@@ -1,0 +1,205 @@
+{% extends "base.html" %} {% block content %}
+
+<div class="space-y-6">
+  <div class="bg-white rounded-xl p-6 shadow">
+    <h1 class="text-4xl font-bold">Playoffs</h1>
+    <p class="text-gray-600 mt-2">
+      Bracket de eliminación directa con los 32 mejores equipos.
+    </p>
+  </div>
+
+  <div class="bg-white rounded-xl p-6 shadow">
+    <h2 class="font-bold mb-4">Bracket de eliminación directa</h2>
+
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
+        <div class="space-y-4">
+          <h3 class="font-semibold mb-2">Eliminatoria de 32</h3>
+          {% for partido in eliminatoria %}
+          <div class="border rounded-xl p-4 bg-gray-50">
+            <p class="text-xs uppercase text-gray-500 mb-2">
+              {{ partido.fase }}
+            </p>
+            <div class="flex justify-between items-center gap-2">
+              {% if partido.equipo1 %}
+              <span class="font-semibold">{{ partido.equipo1.nombre }}</span>
+              {% else %}
+              <span class="font-semibold">TBD</span>
+              {% endif %}
+              <span class="text-lg font-bold">{{ partido.score }}</span>
+              {% if partido.equipo2 %}
+              <span class="font-semibold">{{ partido.equipo2.nombre }}</span>
+              {% else %}
+              <span class="font-semibold">TBD</span>
+              {% endif %}
+            </div>
+          </div>
+          {% empty %}
+          <p class="text-gray-500">
+            No hay suficientes equipos para mostrar la eliminatoria.
+          </p>
+          {% endfor %}
+        </div>
+
+        <div class="space-y-4">
+          <h3 class="font-semibold mb-2">Octavos</h3>
+          {% for partido in octavos %}
+          <div class="border rounded-xl p-4 bg-gray-50">
+            <p class="text-xs uppercase text-gray-500 mb-2">
+              {{ partido.fase }}
+            </p>
+            <div class="flex justify-between items-center gap-2">
+              {% if partido.equipo1 %}
+              <span class="font-semibold">{{ partido.equipo1.nombre }}</span>
+              {% else %}
+              <span class="font-semibold">TBD</span>
+              {% endif %}
+              <span class="text-lg font-bold">{{ partido.score }}</span>
+              {% if partido.equipo2 %}
+              <span class="font-semibold">{{ partido.equipo2.nombre }}</span>
+              {% else %}
+              <span class="font-semibold">TBD</span>
+              {% endif %}
+            </div>
+          </div>
+          {% empty %}
+          <p class="text-gray-500">Octavos pendientes de resultados.</p>
+          {% endfor %}
+
+          <h3 class="font-semibold mt-6 mb-2">Cuartos</h3>
+          {% for partido in cuartos %}
+          <div class="border rounded-xl p-4 bg-gray-50">
+            <p class="text-xs uppercase text-gray-500 mb-2">
+              {{ partido.fase }}
+            </p>
+            <div class="flex justify-between items-center gap-2">
+              {% if partido.equipo1 %}
+              <span class="font-semibold">{{ partido.equipo1.nombre }}</span>
+              {% else %}
+              <span class="font-semibold">TBD</span>
+              {% endif %}
+              <span class="text-lg font-bold">{{ partido.score }}</span>
+              {% if partido.equipo2 %}
+              <span class="font-semibold">{{ partido.equipo2.nombre }}</span>
+              {% else %}
+              <span class="font-semibold">TBD</span>
+              {% endif %}
+            </div>
+          </div>
+          {% empty %}
+          <p class="text-gray-500">Cuartos pendientes de resultados.</p>
+          {% endfor %}
+        </div>
+
+        <div class="space-y-4">
+          <h3 class="font-semibold mb-2">Semifinales</h3>
+          {% for partido in semifinales %}
+          <div class="border rounded-xl p-4 bg-gray-50">
+            <p class="text-xs uppercase text-gray-500 mb-2">
+              {{ partido.fase }}
+            </p>
+            <div class="flex justify-between items-center gap-2">
+              {% if partido.equipo1 %}
+              <span class="font-semibold">{{ partido.equipo1.nombre }}</span>
+              {% else %}
+              <span class="font-semibold">TBD</span>
+              {% endif %}
+              <span class="text-lg font-bold">{{ partido.score }}</span>
+              {% if partido.equipo2 %}
+              <span class="font-semibold">{{ partido.equipo2.nombre }}</span>
+              {% else %}
+              <span class="font-semibold">TBD</span>
+              {% endif %}
+            </div>
+          </div>
+          {% empty %}
+          <p class="text-gray-500">Semifinales pendientes de resultados.</p>
+          {% endfor %}
+
+          <h3 class="font-semibold mt-6 mb-2">Final</h3>
+          {% for partido in final %}
+          <div class="border rounded-xl p-4 bg-gray-50">
+            <p class="text-xs uppercase text-gray-500 mb-2">
+              {{ partido.fase }}
+            </p>
+            <div class="flex justify-between items-center gap-2">
+              {% if partido.equipo1 %}
+              <span class="font-semibold">{{ partido.equipo1.nombre }}</span>
+              {% else %}
+              <span class="font-semibold">TBD</span>
+              {% endif %}
+              <span class="text-lg font-bold">{{ partido.score }}</span>
+              {% if partido.equipo2 %}
+              <span class="font-semibold">{{ partido.equipo2.nombre }}</span>
+              {% else %}
+              <span class="font-semibold">TBD</span>
+              {% endif %}
+            </div>
+          </div>
+          {% empty %}
+          <p class="text-gray-500">Final pendiente de resultados.</p>
+          {% endfor %}
+
+          <h3 class="font-semibold mt-6 mb-2">Tercer puesto</h3>
+          {% for partido in tercer_puesto %}
+          <div class="border rounded-xl p-4 bg-gray-50">
+            <p class="text-xs uppercase text-gray-500 mb-2">
+              {{ partido.fase }}
+            </p>
+            <div class="flex justify-between items-center gap-2">
+              {% if partido.equipo1 %}
+              <span class="font-semibold">{{ partido.equipo1.nombre }}</span>
+              {% else %}
+              <span class="font-semibold">TBD</span>
+              {% endif %}
+              <span class="text-lg font-bold">{{ partido.score }}</span>
+              {% if partido.equipo2 %}
+              <span class="font-semibold">{{ partido.equipo2.nombre }}</span>
+              {% else %}
+              <span class="font-semibold">TBD</span>
+              {% endif %}
+            </div>
+          </div>
+          {% empty %}
+          <p class="text-gray-500">Tercer puesto pendiente de resultados.</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-xl p-6 shadow">
+      <h2 class="font-bold mb-4">Top 32 equipos</h2>
+      <table class="w-full text-sm">
+        <thead class="text-gray-500 border-b">
+          <tr>
+            <th class="text-left">#</th>
+            <th class="text-left">Equipo</th>
+            <th class="text-left">Grupo</th>
+            <th class="text-center">PTS</th>
+            <th class="text-center">GD</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for fila in top32 %}
+          <tr class="border-b">
+            <td class="py-2 font-bold">{{ forloop.counter }}</td>
+            <td class="py-2">{{ fila.equipo.nombre }}</td>
+            <td class="py-2">{{ fila.grupo.nombre }}</td>
+            <td class="py-2 text-center">{{ fila.puntos }}</td>
+            <td class="py-2 text-center">
+              {{ fila.goles_favor|add:'-'|add:fila.goles_contra }}
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="5" class="py-4 text-center text-gray-500">
+              Aún no hay equipos clasificados.
+            </td>
+          </tr>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

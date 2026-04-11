@@ -1,0 +1,88 @@
+{% extends "base.html" %} {% block content %}
+
+<div
+  class="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-700 via-blue-600 to-yellow-400 p-10"
+>
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-8">
+    <!-- HEADER -->
+    <div class="text-center mb-6">
+      <img
+        src="https://paladarnegro.net/escudoteca/copas/copamundial/png/mundial_2026.png"
+        class="w-24 mx-auto mb-3"
+      />
+
+      <h1 class="text-2xl font-bold text-gray-800">Edit Team</h1>
+
+      <p class="text-gray-500 text-sm">Update country for the tournament</p>
+    </div>
+
+    <!-- FORM -->
+    <form method="POST" class="space-y-5">
+      {% csrf_token %}
+
+      <!-- COUNTRY NAME -->
+      <div>
+        <label class="text-sm font-semibold text-gray-700">
+          Country Name
+        </label>
+
+        <input
+          type="text"
+          name="nombre"
+          value="{{ equipo.nombre }}"
+          class="w-full mt-1 p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+        />
+      </div>
+
+      <!-- FLAG -->
+      <div>
+        <label class="text-sm font-semibold text-gray-700"> Flag URL </label>
+
+        <input
+          type="text"
+          name="bandera"
+          value="{{ equipo.bandera }}"
+          class="w-full mt-1 p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+        />
+      </div>
+
+      <!-- GROUP -->
+      <div>
+        <label class="text-sm font-semibold text-gray-700"> Group </label>
+
+        <select
+          name="grupo"
+          class="w-full mt-1 p-3 border rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
+        >
+          {% for grupo in grupos %}
+
+          <option
+            value="{{ grupo.id }}"
+            {%
+            if
+            grupo.id=""
+            ="equipo.grupo.id"
+            %}
+            selected
+            {%
+            endif
+            %}
+          >
+            Group {{ grupo.nombre }}
+          </option>
+
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- BUTTON -->
+      <button
+        class="w-full bg-gradient-to-r from-red-600 via-blue-600 to-yellow-400 text-white font-semibold py-3 rounded-lg hover:scale-105 transition"
+      >
+        ⚽ Update Team
+      </button>
+    </form>
+  </div>
+</div>
+
+{% endblock %}
