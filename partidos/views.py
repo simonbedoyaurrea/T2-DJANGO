@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
+import random
 
-from partidos.models import Equipo, Partido, TablaGrupo, Grupo
+from partidos.models import Equipo, Partido, TablaGrupo, Grupo, Playoff
 from django.db.models import Q
 from itertools import combinations
 # Create your views here.
@@ -14,37 +15,32 @@ def grupo(request, letra):
     grupo = Grupo.objects.get(nombre=letra)
 
     equipos = Equipo.objects.filter(grupo=grupo)
-    encuentros =  list(combinations(equipos, 2))
+
+    partidos = Partido.objects.filter(grupo=grupo)  
+
+    if not partidos.exists():
+        generar_partidos(grupo.nombre)
+        partidos = Partido.objects.filter(grupo=grupo)
 
     # calcular tabla
     calcular_tabla(grupo)
 
-    partidos = []
-
-    # obtener tabla ordenada
+        # obtener tabla ordenada
     tabla = TablaGrupo.objects.filter(grupo=grupo).order_by("-puntos")
 
-    for e in encuentros:
-        partidos.append({
-            "jornada": 1,
-            "local": e[0].nombre,
-            "visitante": e[1].nombre,
-            "goles_local": 0,
-            "goles_visitante": 0
-        })
-
+    
 
     # MVP dummy
     mvp = [
         {
-            "nombre": "Christian Pulisic",
-            "equipo": "USA",
-            "foto": "https://cdn-icons-png.flaticon.com/512/149/149071.png"
+            "nombre": "Kylian Mbappé",
+            "equipo": "Francia",
+            "foto": "https://img.uefa.com/imgml/TP/players/1/2026/324x324/250076574.jpg"
         },
         {
-            "nombre": "Santiago Gimenez",
-            "equipo": "Mexico",
-            "foto": "https://cdn-icons-png.flaticon.com/512/149/149071.png"
+            "nombre": "Manuel Neuer",
+            "equipo": "Alemania",
+            "foto": "https://img.a.transfermarkt.technology/portrait/big/17259-1762943283.jpg?lm=1"
         }
     ]
 
@@ -53,110 +49,39 @@ def grupo(request, letra):
         "tabla": tabla,
         "partidos": partidos,
         "mvp": mvp,
+        "equipos": equipos
     })
+def generar_partidos(letra):
+
+    grupo = Grupo.objects.get(nombre=letra)
+    equipos = Equipo.objects.filter(grupo=grupo)
+
+    encuentros = list(combinations(equipos, 2))
+
+    for e in encuentros:
+        Partido.objects.create(
+            equipo1=e[0],
+            equipo2=e[1],
+            goles_equipo1=0,
+            goles_equipo2=0,
+            grupo=grupo
+        )
+
 
 def playoffs(request):
-    calcular_tabla_global()
-
-    tabla_global = TablaGrupo.objects.select_related("equipo", "grupo").order_by(
-        "-puntos",
-        "-goles_favor",
-        "goles_contra"
-    )
-    top32 = list(tabla_global[:32])
-
-    seed_pairs_32 = [
-        (0, 31),
-        (15, 16),
-        (7, 24),
-        (8, 23),
-        (3, 28),
-        (12, 19),
-        (4, 27),
-        (11, 20),
-        (1, 30),
-        (14, 17),
-        (6, 25),
-        (9, 22),
-        (2, 29),
-        (13, 18),
-        (5, 26),
-        (10, 21),
-    ]
-
-    def build_match(team_a, team_b, fase):
-        return {
-            "fase": fase,
-            "equipo1": team_a,
-            "equipo2": team_b,
-            "goles1": 0,
-            "goles2": 0,
-            "score": "TBD",
-        }
-
-    def winner(match):
-        if not match["equipo1"] or not match["equipo2"]:
-            return None
-        if match["goles1"] > match["goles2"]:
-            return match["equipo1"]
-        if match["goles2"] > match["goles1"]:
-            return match["equipo2"]
-        return None
-
-    def loser(match):
-        if not match["equipo1"] or not match["equipo2"]:
-            return None
-        if match["goles1"] > match["goles2"]:
-            return match["equipo2"]
-        if match["goles2"] > match["goles1"]:
-            return match["equipo1"]
-        return None
-
-    eliminatoria = []
-    for a, b in seed_pairs_32:
-        team_a = top32[a].equipo if a < len(top32) else None
-        team_b = top32[b].equipo if b < len(top32) else None
-        eliminatoria.append(build_match(team_a, team_b, "Eliminatoria de 32"))
-
-    octavos = []
-    if len(eliminatoria) >= 2:
-        octavos = [
-            build_match(winner(eliminatoria[0]), winner(eliminatoria[1]), "Octavos"),
-            build_match(winner(eliminatoria[2]), winner(eliminatoria[3]), "Octavos"),
-            build_match(winner(eliminatoria[4]), winner(eliminatoria[5]), "Octavos"),
-            build_match(winner(eliminatoria[6]), winner(eliminatoria[7]), "Octavos"),
-            build_match(winner(eliminatoria[8]), winner(eliminatoria[9]), "Octavos"),
-            build_match(winner(eliminatoria[10]), winner(eliminatoria[11]), "Octavos"),
-            build_match(winner(eliminatoria[12]), winner(eliminatoria[13]), "Octavos"),
-            build_match(winner(eliminatoria[14]), winner(eliminatoria[15]), "Octavos"),
-        ]
-
-    cuartos = []
-    if len(octavos) >= 2:
-        cuartos = [
-            build_match(winner(octavos[0]), winner(octavos[1]), "Cuartos"),
-            build_match(winner(octavos[2]), winner(octavos[3]), "Cuartos"),
-            build_match(winner(octavos[4]), winner(octavos[5]), "Cuartos"),
-            build_match(winner(octavos[6]), winner(octavos[7]), "Cuartos"),
-        ]
-
-    semifinales = []
-    if len(cuartos) >= 2:
-        semifinales = [
-            build_match(winner(cuartos[0]), winner(cuartos[1]), "Semifinal"),
-            build_match(winner(cuartos[2]), winner(cuartos[3]), "Semifinal"),
-        ]
-
-    final = []
-    tercer_puesto = []
-    if len(semifinales) >= 2:
-        final = [build_match(winner(semifinales[0]), winner(semifinales[1]), "Final")]
-        tercer_puesto = [
-            build_match(loser(semifinales[0]), loser(semifinales[1]), "Tercer Puesto")
-        ]
-
+    # Generar playoffs si no existen
+    if not Playoff.objects.exists():
+        generar_playoffs()
+    
+    # Obtener todas las rondas
+    eliminatoria = Playoff.objects.filter(ronda=1).order_by('orden')
+    octavos = Playoff.objects.filter(ronda=2).order_by('orden')
+    cuartos = Playoff.objects.filter(ronda=3).order_by('orden')
+    semifinales = Playoff.objects.filter(ronda=4).order_by('orden')
+    final = Playoff.objects.filter(ronda=5).order_by('orden')
+    tercer_puesto = Playoff.objects.filter(ronda=6).order_by('orden')
+    
     return render(request, "playoffs.html", {
-        "top32": top32,
         "eliminatoria": eliminatoria,
         "octavos": octavos,
         "cuartos": cuartos,
@@ -164,6 +89,144 @@ def playoffs(request):
         "final": final,
         "tercer_puesto": tercer_puesto,
     })
+
+def generar_playoffs():
+    from partidos.models import Playoff
+    
+    
+    Playoff.objects.all().delete()
+    
+  
+    tabla_global = TablaGrupo.objects.select_related("equipo", "grupo").order_by(
+        "-puntos",
+        "-goles_favor",
+        "goles_contra"
+    )
+    top32 = list(tabla_global[:32])
+    
+    
+    seed_pairs_32 = [
+        (0, 31), (15, 16), (7, 24), (8, 23), (3, 28), (12, 19),
+        (4, 27), (11, 20), (1, 30), (14, 17), (6, 25), (9, 22),
+        (2, 29), (13, 18), (5, 26), (10, 21),
+    ]
+    
+    # Crear partidos de eliminatoria de 32
+    for i, (a, b) in enumerate(seed_pairs_32):
+        team_a = top32[a].equipo if a < len(top32) else None
+        team_b = top32[b].equipo if b < len(top32) else None
+        
+        Playoff.objects.create(
+            fase="Eliminatoria de 32",
+            equipo1=team_a,
+            equipo2=team_b,
+            ronda=1,
+            orden=i
+        )
+
+def generar_siguiente_ronda(ronda_actual):
+  
+    from partidos.models import Playoff
+    
+    if ronda_actual == 1: 
+        partidos_actuales = Playoff.objects.filter(ronda=1)
+        ganadores = []
+        
+        for partido in partidos_actuales:
+            if partido.equipo1 and partido.equipo2:
+                if partido.goles1 > partido.goles2:
+                    ganadores.append(partido.equipo1)
+                elif partido.goles2 > partido.goles1:
+                    ganadores.append(partido.equipo2)
+        
+       
+        if len(ganadores) >= 16:
+            for i in range(8):
+                Playoff.objects.create(
+                    fase="Octavos",
+                    equipo1=ganadores[i*2] if i*2 < len(ganadores) else None,
+                    equipo2=ganadores[i*2+1] if i*2+1 < len(ganadores) else None,
+                    ronda=2,
+                    orden=i
+                )
+    
+    elif ronda_actual == 2: 
+        partidos_actuales = Playoff.objects.filter(ronda=2)
+        ganadores = []
+        
+        for partido in partidos_actuales:
+            if partido.equipo1 and partido.equipo2:
+                if partido.goles1 > partido.goles2:
+                    ganadores.append(partido.equipo1)
+                elif partido.goles2 > partido.goles1:
+                    ganadores.append(partido.equipo2)
+        
+       
+        if len(ganadores) >= 8:
+            for i in range(4):
+                Playoff.objects.create(
+                    fase="Cuartos",
+                    equipo1=ganadores[i*2] if i*2 < len(ganadores) else None,
+                    equipo2=ganadores[i*2+1] if i*2+1 < len(ganadores) else None,
+                    ronda=3,
+                    orden=i
+                )
+    
+    elif ronda_actual == 3: 
+        partidos_actuales = Playoff.objects.filter(ronda=3)
+        ganadores = []
+        perdedores = []
+        
+        for partido in partidos_actuales:
+            if partido.equipo1 and partido.equipo2:
+                if partido.goles1 > partido.goles2:
+                    ganadores.append(partido.equipo1)
+                    perdedores.append(partido.equipo2)
+                elif partido.goles2 > partido.goles1:
+                    ganadores.append(partido.equipo2)
+                    perdedores.append(partido.equipo1)
+        
+        
+        if len(ganadores) >= 4:
+            for i in range(2):
+                Playoff.objects.create(
+                    fase="Semifinal",
+                    equipo1=ganadores[i*2] if i*2 < len(ganadores) else None,
+                    equipo2=ganadores[i*2+1] if i*2+1 < len(ganadores) else None,
+                    ronda=4,
+                    orden=i
+                )
+        
+        
+        if len(perdedores) >= 2:
+            Playoff.objects.create(
+                fase="Tercer Puesto",
+                equipo1=perdedores[0] if len(perdedores) > 0 else None,
+                equipo2=perdedores[1] if len(perdedores) > 1 else None,
+                ronda=6,
+                orden=0
+            )
+    
+    elif ronda_actual == 4:  
+        partidos_actuales = Playoff.objects.filter(ronda=4)
+        ganadores = []
+        
+        for partido in partidos_actuales:
+            if partido.equipo1 and partido.equipo2:
+                if partido.goles1 > partido.goles2:
+                    ganadores.append(partido.equipo1)
+                elif partido.goles2 > partido.goles1:
+                    ganadores.append(partido.equipo2)
+        
+  
+        if len(ganadores) >= 2:
+            Playoff.objects.create(
+                fase="Final",
+                equipo1=ganadores[0] if len(ganadores) > 0 else None,
+                equipo2=ganadores[1] if len(ganadores) > 1 else None,
+                ronda=5,
+                orden=0
+            )
 
 def calcular_tabla(grupo):
 
@@ -223,9 +286,73 @@ def calcular_tabla(grupo):
             }
         )
 
-def calcular_tabla_global():
-    for grupo in Grupo.objects.all():
-        calcular_tabla(grupo)
+
+def actualizar_resultado(request):
+    if request.method == "POST":
+        partido_id = request.POST.get("partido_id")
+        goles_equipo1 = int(request.POST.get("goles_equipo1", 0))
+        goles_equipo2 = int(request.POST.get("goles_equipo2", 0))
+        
+        partido = get_object_or_404(Partido, id=partido_id)
+        partido.goles_equipo1 = goles_equipo1
+        partido.goles_equipo2 = goles_equipo2
+        partido.save()
+        
+        # Recalcular tabla del grupo
+        calcular_tabla(partido.grupo)
+        
+        return redirect("grupo", letra=partido.grupo.nombre)
+    
+    return redirect("playoffs")
+
+def actualizar_resultado_playoff(request):
+    if request.method == "POST":
+        playoff_id = request.POST.get("playoff_id")
+        goles1 = int(request.POST.get("goles_equipo1", 0))
+        goles2 = int(request.POST.get("goles_equipo2", 0))
+        
+        playoff = get_object_or_404(Playoff, id=playoff_id)
+        playoff.goles1 = goles1
+        playoff.goles2 = goles2
+        playoff.save()
+        
+        # Generar siguiente ronda si es necesario
+        generar_siguiente_ronda(playoff.ronda)
+        
+        return redirect("playoffs")
+    
+    return redirect("playoffs")
+
+
+def randomizar_resultado_playoff(request):
+    if request.method == "POST":
+        playoff_id = request.POST.get("playoff_id")
+        playoff = get_object_or_404(Playoff, id=playoff_id)
+
+        if playoff.equipo1 and playoff.equipo2:
+            goles1 = random.randint(1, 5)
+            goles2 = random.randint(1, 5)
+            while goles1 == goles2:
+                goles2 = random.randint(1, 5)
+
+            playoff.goles1 = goles1
+            playoff.goles2 = goles2
+            playoff.save()
+            generar_siguiente_ronda(playoff.ronda)
+
+        return redirect("playoffs")
+    return redirect("playoffs")
+
+
+def eliminar_playoff(request):
+    if request.method == "POST":
+        playoff_id = request.POST.get("playoff_id")
+        playoff = get_object_or_404(Playoff, id=playoff_id)
+        playoff.delete()
+        return redirect("playoffs")
+    
+    return redirect("playoffs")
+
 
 def editar_equipo(request, id):
 
@@ -240,9 +367,10 @@ def editar_equipo(request, id):
 
         equipo.save()
 
-        return redirect("/equipos")
+        return redirect("grupo", letra=equipo.grupo.nombre)
 
     return render(request, "editar_equipo.html", {
         "equipo": equipo,
         "grupos": grupos
     })
+

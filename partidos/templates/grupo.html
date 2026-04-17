@@ -3,36 +3,31 @@
 <div class="space-y-6">
   <!-- HEADER -->
 
-  <div class="bg-white rounded-xl p-6 shadow flex justify-between items-center">
+  <div
+    class="rounded-xl p-6 shadow flex justify-between items-center bg-black text-white border-r-8 border-r-purple-400 border-l-8 border-l-red-400"
+  >
     <div>
-      <span class="text-xs bg-red-600 text-white px-2 py-1 rounded">
-        LIVE UPDATES
-      </span>
-
       <h1 class="text-4xl font-bold mt-2">GRUPO {{ grupo }}</h1>
-    </div>
-
-    <div class="flex gap-6 text-center">
-      <div class="bg-gray-100 px-4 py-2 rounded">
-        <p class="text-xs text-gray-500">TEAMS</p>
-        <p class="text-xl font-bold">{{ tabla|length }}</p>
-      </div>
-
-      <div class="bg-gray-100 px-4 py-2 rounded">
-        <p class="text-xs text-gray-500">MATCHES</p>
-        <p class="text-xl font-bold">{{ partidos|length }}</p>
-      </div>
+      {% for equipo in equipos %}
+      <img
+        src="{{ equipo.bandera }}"
+        alt="{{ equipo.nombre }}  "
+        class="w-8 h-8 inline-block mr-2"
+      />
+      {% endfor %}
     </div>
   </div>
 
   <!-- GRID PRINCIPAL -->
 
-  <div class="grid grid-cols-3 gap-6">
+  <div class="grid grid-cols-3 gap-20">
     <!-- STANDINGS -->
-    <div class="col-span-2 bg-white p-6 rounded-xl shadow">
+    <div
+      class="col-span-2 p-6 text-white shadow relative rounded-xl border-r-8 border-r-purple-400 border-l-8 border-l-lime-400 bg-black"
+    >
       <h3 class="font-bold mb-4">Posiciones</h3>
 
-      <table class="w-full text-sm">
+      <table class="w-10/12 text-sm p-20">
         <thead class="text-gray-500 border-b">
           <tr>
             <th class="text-left">POS</th>
@@ -53,6 +48,12 @@
             <td class="font-bold text-red-600">{{ forloop.counter }}</td>
 
             <td class="py-2 flex items-center gap-2">
+              <a
+                href="{% url 'editar_equipo' fila.equipo.id %}"
+                class="bg-lime-500 text-white px-3 py-1 rounded-lg inline-flex items-center justify-center"
+              >
+                <i class="fa-solid fa-pen-to-square"></i>
+              </a>
               <img
                 class="w-6 h-6"
                 src="{{ fila.equipo.bandera }}"
@@ -60,9 +61,6 @@
               />
 
               {{ fila.equipo.nombre }}
-              <button class="bg-blue-600 text-white px-3 py-1 rounded-lg">
-                <i class="fa-solid fa-pen-to-square"></i>
-              </button>
             </td>
 
             <td class="text-center">{{ fila.jugados }}</td>
@@ -80,6 +78,11 @@
           {% endfor %}
         </tbody>
       </table>
+      <img
+        src="https://i.pinimg.com/originals/90/7d/e9/907de999494e8b3dde99afb3f752239c.png"
+        alt=""
+        class="absolute -bottom-2 -right-20 w-48"
+      />
     </div>
 
     <!-- RIGHT PANEL -->
@@ -105,29 +108,144 @@
     </div>
   </div>
 
-  <div class="bg-white p-6 rounded-xl shadow">
-    <h3 class="font-bold mb-4">MATCHCENTER</h3>
+  <div
+    class="p-6 flex flex-col items-end relative rounded-xl shadow bg-neutral-900 text-white border-r-8 border-r-red-600 border-l-8 border-l-red-200"
+  >
+    <h3 class="font-bold mb-4 self-center">PARTIDOS</h3>
 
-    <div class="grid grid-cols-3 gap-4">
+    <div class="w-10/12 grid grid-cols-3 gap-4">
       {% for partido in partidos %}
 
-      <div class="border rounded-lg p-4 text-center">
-        <p class="text-xs text-gray-400">MATCHDAY {{ partido.jornada }}</p>
-
+      <div
+        class="p-4 text-center rounded-full border-r-8 border-r-red-300 border-l-8 border-l-lime-300 bg-black text-white"
+      >
         <div class="flex justify-between items-center mt-2">
-          <span> {{ partido.local }} </span>
+          <img src="{{ partido.equipo1.bandera }}" class="w-8 h-8" />
 
-          <span class="font-bold">
-            {{ partido.goles_local }} - {{ partido.goles_visitante }}
-          </span>
+          <button
+            type="button"
+            onclick="openResultModal({{ partido.id }}, '{{ partido.equipo1.nombre }}', '{{ partido.equipo2.nombre }}', {{ partido.goles_equipo1 }}, {{ partido.goles_equipo2 }})"
+            class="font-bold text-yellow-300 hover:text-yellow-100 transition cursor-pointer"
+          >
+            <span class="rounded-full bg-cyan-400 text-black px-2 py-1">
+              {{ partido.goles_equipo1 }}</span
+            >
+            -
+            <span class="rounded-full bg-cyan-400 text-black px-2 py-1"
+              >{{ partido.goles_equipo2}}</span
+            >
+          </button>
 
-          <span> {{ partido.visitante }} </span>
+          <img src="{{ partido.equipo2.bandera }}" class="w-8 h-8" />
         </div>
       </div>
 
       {% endfor %}
     </div>
+    <img
+      src="https://res.cloudinary.com/dsobv0pj7/image/upload/q_auto/f_auto/v1775965128/dgm-048-mascot-png-crops-and-website-pop-up-graphics-v2-with-logo-2-zayu-16x9_rgixub.png"
+      alt=""
+      class="absolute -bottom-10 -left-20 w-96 h-72"
+    />
   </div>
 </div>
+
+<!-- MODAL CAMBIAR RESULTADO -->
+<div
+  id="resultModal"
+  class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+>
+  <div
+    class="bg-black rounded-2xl shadow-2xl w-full max-w-md p-8 relative text-white border-r-8 border-l-yellow-300 border-l-8 border-r-purple-600"
+  >
+    <!-- HEADER MODAL -->
+    <div class="text-center mb-6">
+      <h2 class="text-2xl font-bold text-gray-200">Cambiar Resultado</h2>
+      <p class="text-gray-500 text-sm mt-2" id="equiposInfo"></p>
+    </div>
+
+    <!-- FORM RESULTADO -->
+    <form
+      method="POST"
+      action="{% url 'actualizar_resultado' %}"
+      class="space-y-5"
+    >
+      {% csrf_token %}
+      <input type="hidden" id="partidoId" name="partido_id" />
+
+      <!-- EQUIPO 1 GOLES -->
+      <div>
+        <label class="text-sm font-semibold text-gray-400" id="equipo1Label">
+        </label>
+        <input
+          type="number"
+          name="goles_equipo1"
+          id="goles1"
+          min="0"
+          class="w-full mt-1 p-3 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none text-black"
+          placeholder="0"
+        />
+      </div>
+
+      <!-- EQUIPO 2 GOLES -->
+      <div>
+        <label class="text-sm font-semibold text-gray-400" id="equipo2Label">
+          Goles Equipo 2
+        </label>
+        <input
+          type="number"
+          name="goles_equipo2"
+          id="goles2"
+          min="0"
+          class="w-full mt-1 p-3 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none text-black"
+          placeholder="0"
+        />
+      </div>
+
+      <!-- BOTONES -->
+      <div class="flex gap-3">
+        <button
+          type="button"
+          onclick="closeResultModal()"
+          class="flex-1 bg-red-400 text-white font-semibold py-3 rounded-lg hover:bg-red-500 transition"
+        >
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          class="flex-1 bg-lime-700 text-white font-semibold py-3 rounded-lg hover:scale-105 transition"
+        >
+          Guardar
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  function openResultModal(partidoId, equipo1, equipo2, goles1, goles2) {
+    document.getElementById("resultModal").classList.remove("hidden");
+    document.getElementById("partidoId").value = partidoId;
+    document.getElementById("goles1").value = goles1;
+    document.getElementById("goles2").value = goles2;
+    document.getElementById("equiposInfo").innerText =
+      equipo1 + " vs " + equipo2;
+    document.getElementById("equipo1Label").innerText = "Goles " + equipo1;
+    document.getElementById("equipo2Label").innerText = "Goles " + equipo2;
+  }
+
+  function closeResultModal() {
+    document.getElementById("resultModal").classList.add("hidden");
+  }
+
+  // Cerrar modal al hacer clic fuera de él
+  document
+    .getElementById("resultModal")
+    .addEventListener("click", function (e) {
+      if (e.target === this) {
+        closeResultModal();
+      }
+    });
+</script>
 
 {% endblock %}

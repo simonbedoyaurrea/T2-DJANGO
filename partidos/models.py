@@ -41,14 +41,23 @@ class Playoff(models.Model):
     equipo1 = models.ForeignKey(
         Equipo,
         on_delete=models.CASCADE,
-        related_name="playoff1"
+        related_name="playoff1",
+        null=True,
+        blank=True
     )
 
     equipo2 = models.ForeignKey(
         Equipo,
         on_delete=models.CASCADE,
-        related_name="playoff2"
+        related_name="playoff2",
+        null=True,
+        blank=True
     )
 
     goles1 = models.IntegerField(default=0)
     goles2 = models.IntegerField(default=0)
+    
+    ronda = models.IntegerField(default=1)  # 1=32, 2=16, 3=8, 4=4, 5=2, 6=final
+    orden = models.IntegerField(default=0)  # orden dentro de la ronda
+
+    
